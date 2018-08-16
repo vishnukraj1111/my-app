@@ -1,23 +1,22 @@
 node{
    stage('SCM Checkout'){
-     git 'https://github.com/javahometech/my-app'
+       git credentialsId: 'git-creds', url: 'https://github.com/vishnukraj1111/my-app'
    }
-   stage('Compile-Package'){
-      // Get maven home path
-      def mvnHome =  tool name: 'maven-3', type: 'maven'   
-      sh "${mvnHome}/bin/mvn package"
+   stage('Mvn Package'){
+       def mvnHome = tool name: 'maven35', type: 'maven'
+       def mvnCMD = "${mvnHome}/bin/mvn"
+            sh "${mvnCMD} clean package"
    }
-   stage('Email Notification'){
-      mail bcc: '', body: '''Hi Welcome to jenkins email alerts
-      Thanks
-      Hari''', cc: '', from: '', replyTo: '', subject: 'Jenkins Job', to: 'hari.kammana@gmail.com'
+   stage('Build Docker Image'){
+     sh 'docker build -t vishnukraj1/my-app:1.0 .'
    }
-   stage('Slack Notification'){
-       slackSend baseUrl: 'https://hooks.slack.com/services/',
-       channel: '#jenkins-pipeline-demo',
-       color: 'good', 
-       message: 'Welcome to Jenkins, Slack!', 
-       teamDomain: 'javahomecloud',
-       tokenCredentialId: 'slack-demo'
+   stage('Push Docker Image'){
+     withCredentials([string(credentialsId: 'docker-pwd', variable: 'dockerHubPwd')]) {
+        sh "docker login -u vishnukraj1 -p ${dockerHubPwd}"
+     }
+     sh 'docker push  vishnukraj1/my-app:1.0'
+   }
+    stage('Run Container on Dev Server'){
+     sh 'docker run -itd --name my-app -p 8081:8080 vishnukraj1/my-app:1.0'
    }
 }
