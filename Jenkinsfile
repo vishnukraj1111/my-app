@@ -8,13 +8,9 @@ node{
             sh "${mvnCMD} clean package"
    }
    stage('Mvn Unit Test'){
-       def mvnHome = tool name: 'maven35', type: 'maven'
-       def mvnCMD = "${mvnHome}/bin/mvn"
             sh "${mvnCMD} clean test"
    }
    stage('Mvn Intergration Test'){
-       def mvnHome = tool name: 'maven35', type: 'maven'
-       def mvnCMD = "${mvnHome}/bin/mvn"
             sh "${mvnCMD} clean verify"
    }
    stage('Build Docker Image'){
